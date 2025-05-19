@@ -1,12 +1,21 @@
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.devs-store.it');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Preflight (CORS check)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // ...il resto del codice già corretto che avevi:
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Solo POST ammesso' });
   }
 
-  const { customer_id, phone, first_name, last_name, address1, city, zip } = req.body;
+  const { customer_id, phone, address1, city, zip, name } = req.body;
 
-  // Validazione base
-  if (!customer_id || !phone || !address1 || !city || !zip || !first_name) {
+  if (!customer_id || !phone || !address1 || !city || !zip || !name) {
     return res.status(400).json({ error: 'Dati mancanti', received: req.body });
   }
 
@@ -23,8 +32,7 @@ export default async function handler(req, res) {
       customer: {
         id: customer_id,
         phone,
-        first_name,
-        last_name,
+        first_name: name,
         default_address: {
           address1,
           city,
@@ -43,21 +51,12 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    console.log('✅ Risposta Shopify:', data);
-
     if (!response.ok) {
-      console.error('❌ Shopify API Error:', data);
       return res.status(response.status).json({ error: data.errors || data });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: 'Cliente aggiornato con successo',
-      customer: data.customer,
-    });
+    return res.status(200).json({ success: true, customer: data.customer });
   } catch (err) {
-    console.error('❌ Server Error:', err);
     return res.status(500).json({ error: 'Errore server', details: err.message });
   }
 }
-
