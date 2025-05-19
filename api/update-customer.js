@@ -27,14 +27,23 @@ export default async function handler(req, res) {
   try {
     const endpoint = `https://${shop}/admin/api/2024-01/customers/${customer_id}.json`;
 
-    const bodyData = {
-      customer: {
-        id: customer_id,
-        phone,
-        first_name,
-        last_name
+   const bodyData = {
+  customer: {
+    id: customer_id,
+    first_name,
+    last_name,
+    phone,
+    addresses: [
+      {
+        address1,
+        city,
+        zip,
+        default: true
       }
-    };
+    ]
+  }
+};
+
 
     const response = await fetch(endpoint, {
       method: 'PUT',
